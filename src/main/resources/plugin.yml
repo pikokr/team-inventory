@@ -3,3 +3,7 @@ main: $pluginMain
 depend: [ Kotlin ]
 api-version: '1.16'
 version: $version
+
+commands:
+  tinv:
+    description: Team inventory command
