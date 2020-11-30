@@ -39,7 +39,7 @@ class TeamInventory : JavaPlugin() {
         internal lateinit var playerInventoryClass: Class<*>
     }
 
-    val invites = HashMap<String, Player>()
+    val invites = HashMap<Player, String>()
 
     override fun onEnable() {
         instance = this
