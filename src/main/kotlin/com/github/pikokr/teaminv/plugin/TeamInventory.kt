@@ -1,9 +1,13 @@
 package com.github.pikokr.teaminv.plugin
 
+import com.github.noonmaru.kommand.argument.player
+import com.github.noonmaru.kommand.kommand
+import com.github.pikokr.teaminv.command.accept
 import com.github.pikokr.teaminv.listener.InvListener
 import org.bukkit.Bukkit
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -34,6 +38,8 @@ class TeamInventory : JavaPlugin() {
         internal lateinit var nonNullListClass: Class<*>
         internal lateinit var playerInventoryClass: Class<*>
     }
+
+    val invites = HashMap<String, Player>()
 
     override fun onEnable() {
         instance = this
@@ -68,6 +74,21 @@ class TeamInventory : JavaPlugin() {
         // Listener 클래스 분리
         server.pluginManager.registerEvents(InvListener(), this)
         load()
+
+
+        kommand {
+            register("tinv") {
+                then("join") {
+                }
+                then("accept") {
+                    then("player" to player()) {
+                        executes {
+                            accept(it)
+                        }
+                    }
+                }
+            }
+        }
     }
 
 
