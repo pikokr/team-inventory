@@ -7,6 +7,7 @@ import com.github.pikokr.teaminv.command.accept
 import com.github.pikokr.teaminv.command.join
 import com.github.pikokr.teaminv.listener.InvListener
 import org.bukkit.Bukkit
+import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
@@ -132,6 +133,21 @@ class TeamInventory : JavaPlugin() {
         if (!teamsConf.contains("users")) teamsConf.set("users", listOf<String>())
         users = usersConf.getStringList("users")
         teams = teamsConf.getStringList("teams")
+        Bukkit.getOnlinePlayers().forEach {
+            if (users.find { user -> user == it.uniqueId.toString() } == null) {
+                lock(it)
+            }
+        }
+    }
+
+    fun lock(player: Player) {
+        val item = ItemStack(Material.BARRIER)
+        item.itemMeta = item.itemMeta.apply {
+            setDisplayName("/tinv join <팀이름> 명령어로 팀을 설정해주세요")
+        }
+        for (i in 0..player.inventory.contents.size) {
+            player.inventory.setItem(i, item.clone())
+        }
     }
 
     fun save() {
