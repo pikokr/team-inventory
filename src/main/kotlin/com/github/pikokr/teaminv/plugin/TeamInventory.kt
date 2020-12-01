@@ -1,8 +1,10 @@
 package com.github.pikokr.teaminv.plugin
 
 import com.github.noonmaru.kommand.argument.player
+import com.github.noonmaru.kommand.argument.string
 import com.github.noonmaru.kommand.kommand
 import com.github.pikokr.teaminv.command.accept
+import com.github.pikokr.teaminv.command.join
 import com.github.pikokr.teaminv.listener.InvListener
 import org.bukkit.Bukkit
 import org.bukkit.configuration.ConfigurationSection
@@ -28,6 +30,11 @@ internal fun Class<*>.method(name: String, vararg types: Class<*>) : Method {
 
 class TeamInventory : JavaPlugin() {
     companion object {
+        lateinit var users: List<String>
+        lateinit var teams: List<String>
+        lateinit var teamsConf: YamlConfiguration
+        lateinit var usersConf: YamlConfiguration
+
         internal lateinit var instance: TeamInventory
         // 패트릭님 감사합니다
         // 해당 플러그인에 필요한, 서버 버전마다 달라지는 클래스들
@@ -38,6 +45,9 @@ class TeamInventory : JavaPlugin() {
         internal lateinit var nonNullListClass: Class<*>
         internal lateinit var playerInventoryClass: Class<*>
     }
+
+    val usersFile = File(dataFolder, "users.yml")
+    val teamsFile = File(dataFolder, "teams.yml")
 
     val invites = HashMap<Player, String>()
 
@@ -71,14 +81,20 @@ class TeamInventory : JavaPlugin() {
         nonNullListClass = nms("NonNullList")
         playerInventoryClass = nms("PlayerInventory")
 
+        load()
+
         // Listener 클래스 분리
         server.pluginManager.registerEvents(InvListener(), this)
-        load()
 
 
         kommand {
             register("tinv") {
                 then("join") {
+                    then("name" to string()) {
+                        executes {
+                            join(it)
+                        }
+                    }
                 }
                 then("accept") {
                     then("player" to player()) {
@@ -89,6 +105,10 @@ class TeamInventory : JavaPlugin() {
                 }
             }
         }
+    }
+
+    override fun onDisable() {
+        save()
     }
 
 
@@ -106,11 +126,18 @@ class TeamInventory : JavaPlugin() {
                 nonNullListClass.method("set", Int::class.java, Any::class.java).invoke(list, i, items[i])
             }
         }
+        usersConf = if (usersFile.exists()) YamlConfiguration.loadConfiguration(usersFile) else YamlConfiguration()
+        teamsConf = if (teamsFile.exists()) YamlConfiguration.loadConfiguration(teamsFile) else YamlConfiguration()
+        if (!usersConf.contains("users")) usersConf.set("users", listOf<String>())
+        if (!teamsConf.contains("users")) teamsConf.set("users", listOf<String>())
+        users = usersConf.getStringList("users")
+        teams = teamsConf.getStringList("teams")
+    }
 
-        val file = File(dataFolder, "teams.yml").also { if (!it.exists()) return }
-        val yaml = YamlConfiguration.loadConfiguration(file)
-        if ("teams" !in yaml) yaml.set("teams", arrayListOf<String>())
-        val teams = yaml.getStringList("teams")
-        println(teams)
+    fun save() {
+        usersFile.also { it.parentFile.mkdirs() }
+        teamsFile.also { it.parentFile.mkdirs() }
+        usersConf.save(usersFile)
+        teamsConf.save(teamsFile)
     }
 }
