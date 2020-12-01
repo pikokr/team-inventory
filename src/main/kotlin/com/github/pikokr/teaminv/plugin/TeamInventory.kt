@@ -122,7 +122,6 @@ class TeamInventory : JavaPlugin() {
 
     fun unlock(player: Player) {
         locks.remove(player)
-        player.inventory.clear()
     }
 
     fun patch(player: Player) {
@@ -167,6 +166,12 @@ class TeamInventory : JavaPlugin() {
         for (i in usersConf.getStringList("users")) users.add(i)
         for (i in teamsConf.getStringList("teams")) teams.add(i)
         Bukkit.getOnlinePlayers().forEach(::patch)
+        for (team in teams.iterator()) {
+            val i = inventories[team] ?: continue
+            teamsConf.loadItemStackList("$team.items", i.items)
+            teamsConf.loadItemStackList("$team.armor", i.armor)
+            teamsConf.loadItemStackList("$team.extraSlots", i.extraSlots)
+        }
         for (user in users) {
             if (usersConf.getString(user) == null) users.remove(user)
         }
@@ -197,7 +202,7 @@ class TeamInventory : JavaPlugin() {
         teamsFile.also { it.parentFile.mkdirs() }
 
         for (team in teams.iterator()) {
-            val i = inventories[team] ?: return
+            val i = inventories[team] ?: continue
             teamsConf.setItemStackList("$team.items", i.items)
             teamsConf.setItemStackList("$team.armor", i.armor)
             teamsConf.setItemStackList("$team.extraSlots", i.extraSlots)
