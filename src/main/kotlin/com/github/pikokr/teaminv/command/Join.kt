@@ -16,6 +16,7 @@ fun join(ctx: KommandContext) {
             TeamInventory.teamsConf.set("$name.owner", (ctx.sender as Player).uniqueId.toString())
             TeamInventory.usersConf.set("${(ctx.sender as Player).uniqueId}", name)
             ctx.sender.sendMessage("팀을 생성했습니다")
+            TeamInventory.instance.patch(ctx.sender as Player)
         } else {
             ctx.sender.sendMessage("가입")
         }

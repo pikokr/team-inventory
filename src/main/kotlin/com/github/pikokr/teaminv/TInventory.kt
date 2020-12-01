@@ -3,6 +3,7 @@ package com.github.pikokr.teaminv
 import com.github.pikokr.teaminv.plugin.TeamInventory
 import com.github.pikokr.teaminv.plugin.field
 import com.google.common.collect.ImmutableList
+import java.util.AbstractList
 
 class TInventory {
     val inv = TeamInventory.playerInventoryClass.getConstructor(TeamInventory.entityHumanClass).newInstance(null)

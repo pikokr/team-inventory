@@ -1,7 +1,7 @@
 package com.github.pikokr.teaminv.plugin
 
 import com.github.noonmaru.kommand.argument.player
-import com.github.noonmaru.kommand.argument.string
+import java.util.AbstractList
 import com.github.noonmaru.kommand.kommand
 import com.github.pikokr.teaminv.TInventory
 import com.github.pikokr.teaminv.command.accept
@@ -184,8 +184,25 @@ class TeamInventory : JavaPlugin() {
     }
 
     fun save() {
+        fun ConfigurationSection.setItemStackList(name: String, list: AbstractList<*>) {
+            set(name, list.map { itemStack -> // itemStack: net.minecraft.server.ItemStack
+                // org.bukkit.inventory.ItemStack 객체 가져오기 -> CraftItemStack::asCraftMirror
+                val craftItemStack = craftItemStackClass.method("asCraftMirror", itemStackClass).invoke(null, itemStack)
+
+                (craftItemStack as ItemStack).serialize()
+            })
+        }
+
         usersFile.also { it.parentFile.mkdirs() }
         teamsFile.also { it.parentFile.mkdirs() }
+
+        for (team in teams.iterator()) {
+            val i = inventories[team] ?: return
+            teamsConf.setItemStackList("$team.items", i.items)
+            teamsConf.setItemStackList("$team.armor", i.armor)
+            teamsConf.setItemStackList("$team.extraSlots", i.extraSlots)
+        }
+
         usersConf.set("users", users.toTypedArray())
         teamsConf.set("teams", teams.toTypedArray())
         usersConf.save(usersFile)
