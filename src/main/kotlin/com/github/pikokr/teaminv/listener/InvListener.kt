@@ -19,9 +19,7 @@ class InvListener : Listener {
 
     @EventHandler
     fun onJoin(event: PlayerJoinEvent) {
-        if (TeamInventory.users.find { it === event.player.uniqueId.toString() } == null) {
-            TeamInventory.instance.lock(event.player)
-        }
+        TeamInventory.instance.patch(event.player)
     }
 
     @EventHandler

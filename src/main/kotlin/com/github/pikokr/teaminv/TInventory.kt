@@ -9,10 +9,10 @@ class TInventory {
 
     // net.minecraft.server.NonNullList extends java.util.AbstractList
     // NonNullList 는 서버 버전마다 달라지는 net.minecraft.server 클래스이므로 부모 클래스 사용
-    private val items: AbstractList<*>
-    private val armor: AbstractList<*>
-    private val extraSlots: AbstractList<*>
-    private val contents: List<AbstractList<*>>
+    val items: AbstractList<*>
+    val armor: AbstractList<*>
+    val extraSlots: AbstractList<*>
+    val contents: List<AbstractList<*>>
 
     init {
         inv.javaClass.run {

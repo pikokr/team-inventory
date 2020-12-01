@@ -3,6 +3,7 @@ package com.github.pikokr.teaminv.plugin
 import com.github.noonmaru.kommand.argument.player
 import com.github.noonmaru.kommand.argument.string
 import com.github.noonmaru.kommand.kommand
+import com.github.pikokr.teaminv.TInventory
 import com.github.pikokr.teaminv.command.accept
 import com.github.pikokr.teaminv.command.join
 import com.github.pikokr.teaminv.listener.InvListener
@@ -41,6 +42,7 @@ class TeamInventory : JavaPlugin() {
         lateinit var teamsConf: YamlConfiguration
         lateinit var usersConf: YamlConfiguration
         val locks = HashSet<Player>()
+        val inventories = HashMap<String, TInventory>()
 
         internal lateinit var instance: TeamInventory
         // 패트릭님 감사합니다
@@ -118,6 +120,29 @@ class TeamInventory : JavaPlugin() {
         save()
     }
 
+    fun unlock(player: Player) {
+        locks.remove(player)
+        player.inventory.clear()
+    }
+
+    fun patch(player: Player) {
+        if (!users.contains(player.uniqueId.toString())) {
+            return lock(player)
+        }
+        unlock(player)
+        val team = usersConf.getString(player.uniqueId.toString())!!
+        if (!inventories.containsKey(team)) inventories[team] = TInventory()
+        val t = inventories[team]!!
+        val human = craftPlayerClass.method("getHandle").invoke(player)
+        val inv = entityHumanClass.field("inventory").get(human)
+        inv.javaClass.run {
+            field("items").set(inv, t.items)
+            field("armor").set(inv, t.armor)
+            field("extraSlots").set(inv, t.extraSlots)
+            field("f").set(inv, t.contents)
+        }
+    }
+
 
     fun load() {
         @Suppress("UNCHECKED_CAST")
@@ -141,11 +166,7 @@ class TeamInventory : JavaPlugin() {
         teams = HashSet()
         for (i in usersConf.getStringList("users")) users.add(i)
         for (i in teamsConf.getStringList("teams")) teams.add(i)
-        Bukkit.getOnlinePlayers().forEach {
-            if (users.find { user -> user == it.uniqueId.toString() } == null) {
-                lock(it)
-            }
-        }
+        Bukkit.getOnlinePlayers().forEach(::patch)
         for (user in users) {
             if (usersConf.getString(user) == null) users.remove(user)
         }
