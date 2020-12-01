@@ -6,6 +6,7 @@ import com.github.noonmaru.kommand.kommand
 import com.github.pikokr.teaminv.command.accept
 import com.github.pikokr.teaminv.command.join
 import com.github.pikokr.teaminv.listener.InvListener
+import com.github.pikokr.teaminv.team
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
@@ -35,8 +36,8 @@ internal fun Player.isLocked() : Boolean {
 
 class TeamInventory : JavaPlugin() {
     companion object {
-        lateinit var users: ArrayList<String>
-        lateinit var teams: ArrayList<String>
+        lateinit var users: HashSet<String>
+        lateinit var teams: HashSet<String>
         lateinit var teamsConf: YamlConfiguration
         lateinit var usersConf: YamlConfiguration
         val locks = HashSet<Player>()
@@ -96,7 +97,7 @@ class TeamInventory : JavaPlugin() {
         kommand {
             register("tinv") {
                 then("join") {
-                    then("name" to string()) {
+                    then("name" to team()) {
                         executes {
                             join(it)
                         }
@@ -134,10 +135,12 @@ class TeamInventory : JavaPlugin() {
         }
         usersConf = if (usersFile.exists()) YamlConfiguration.loadConfiguration(usersFile) else YamlConfiguration()
         teamsConf = if (teamsFile.exists()) YamlConfiguration.loadConfiguration(teamsFile) else YamlConfiguration()
-        if (!usersConf.contains("users")) usersConf.set("users", listOf<String>())
-        if (!teamsConf.contains("users")) teamsConf.set("users", listOf<String>())
-        users = ArrayList(usersConf.getStringList("users"))
-        teams = ArrayList(teamsConf.getStringList("teams"))
+        if (!usersConf.contains("users")) usersConf.set("users", arrayOf<String>())
+        if (!teamsConf.contains("teams")) teamsConf.set("teams", arrayOf<String>())
+        users = HashSet()
+        teams = HashSet()
+        for (i in usersConf.getStringList("users")) users.add(i)
+        for (i in teamsConf.getStringList("teams")) teams.add(i)
         Bukkit.getOnlinePlayers().forEach {
             if (users.find { user -> user == it.uniqueId.toString() } == null) {
                 lock(it)
@@ -162,6 +165,8 @@ class TeamInventory : JavaPlugin() {
     fun save() {
         usersFile.also { it.parentFile.mkdirs() }
         teamsFile.also { it.parentFile.mkdirs() }
+        usersConf.set("users", users.toTypedArray())
+        teamsConf.set("teams", teams.toTypedArray())
         usersConf.save(usersFile)
         teamsConf.save(teamsFile)
     }
