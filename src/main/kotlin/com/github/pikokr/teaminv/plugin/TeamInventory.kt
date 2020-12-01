@@ -29,12 +29,17 @@ internal fun Class<*>.method(name: String, vararg types: Class<*>) : Method {
     }
 }
 
+internal fun Player.isLocked() : Boolean {
+    return TeamInventory.locks.contains(this)
+}
+
 class TeamInventory : JavaPlugin() {
     companion object {
         lateinit var users: List<String>
         lateinit var teams: List<String>
         lateinit var teamsConf: YamlConfiguration
         lateinit var usersConf: YamlConfiguration
+        val locks = HashSet<Player>()
 
         internal lateinit var instance: TeamInventory
         // 패트릭님 감사합니다
@@ -141,6 +146,7 @@ class TeamInventory : JavaPlugin() {
     }
 
     fun lock(player: Player) {
+        locks.add(player)
         val item = ItemStack(Material.BARRIER)
         item.itemMeta = item.itemMeta.apply {
             setDisplayName("/tinv join <팀이름> 명령어로 팀을 설정해주세요")
