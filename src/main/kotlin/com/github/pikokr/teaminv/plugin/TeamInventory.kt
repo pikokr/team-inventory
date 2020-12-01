@@ -35,8 +35,8 @@ internal fun Player.isLocked() : Boolean {
 
 class TeamInventory : JavaPlugin() {
     companion object {
-        lateinit var users: List<String>
-        lateinit var teams: List<String>
+        lateinit var users: ArrayList<String>
+        lateinit var teams: ArrayList<String>
         lateinit var teamsConf: YamlConfiguration
         lateinit var usersConf: YamlConfiguration
         val locks = HashSet<Player>()
@@ -136,12 +136,15 @@ class TeamInventory : JavaPlugin() {
         teamsConf = if (teamsFile.exists()) YamlConfiguration.loadConfiguration(teamsFile) else YamlConfiguration()
         if (!usersConf.contains("users")) usersConf.set("users", listOf<String>())
         if (!teamsConf.contains("users")) teamsConf.set("users", listOf<String>())
-        users = usersConf.getStringList("users")
-        teams = teamsConf.getStringList("teams")
+        users = ArrayList(usersConf.getStringList("users"))
+        teams = ArrayList(teamsConf.getStringList("teams"))
         Bukkit.getOnlinePlayers().forEach {
             if (users.find { user -> user == it.uniqueId.toString() } == null) {
                 lock(it)
             }
+        }
+        for (user in users) {
+            if (usersConf.getString(user) == null) users.remove(user)
         }
     }
 
