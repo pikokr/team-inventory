@@ -8,5 +8,4 @@ fun accept(ctx: KommandContext) {
     val pl = TeamInventory.instance
     val invites = pl.invites
     val player = ctx.parseArgument<Player>("player")
-    println(invites[player])
 }
